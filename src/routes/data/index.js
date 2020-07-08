@@ -21,5 +21,5 @@ module.exports = router
         console.log(err);
         next(err);
       });
-      res.json({results});
+      res.json(results);
 })
