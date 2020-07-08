@@ -1,4 +1,4 @@
-module.exports = (conn, q, params) => new Promise(
+module.exports = async (conn, q, params) => new Promise(
   (resolve, reject) => {
     const handler = (err, result) => {
       if (err) {
