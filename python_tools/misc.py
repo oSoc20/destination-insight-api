@@ -1,4 +1,5 @@
 import pandas as pd
+import datetime
 from collections import Counter
 import numpy as np
 import matplotlib.pyplot as plt
@@ -101,8 +102,8 @@ def count_repetitions(df, column, side = None, quantity = None, draw_plot = Fals
     'Count the repetitions for each unique value in the specific column'
     counter = df[column].value_counts().reset_index()
     counter.columns = [column.title(), 'Counts']
-    counter.hist(column='Counts', bins = 10, log= True)
     if draw_plot:
+        counter.hist(column='Counts', bins=10, log=True)
         plt.title(column.title() + ' Stations')
         plt.xlabel('Number of searches')
         plt.ylabel('Number of stations')
@@ -120,8 +121,8 @@ def count_links(df, side = None, quantity = None, draw_plot = False, return_json
     counter.columns = ['Destination pairs', 'Counts']
     counter['Destination pairs'] = [' to/from '.join(list(item)) for item in counter['Destination pairs']]
     counter = counter.sort_values(by=['Counts'], ascending=False)
-    counter.hist(column='Counts', bins=10, log=True)
     if draw_plot:
+        counter.hist(column='Counts', bins=10, log=True)
         plt.title('Origin - Destination pairs')
         plt.xlabel('Number of searches')
         plt.ylabel('Number of station pairs')
@@ -130,3 +131,22 @@ def count_links(df, side = None, quantity = None, draw_plot = False, return_json
     if return_json:
         counter = counter.to_json()
     return counter
+
+def travel_versus_request_times(df, draw_plot = False, return_json = False):
+    'Compare the travel and request times'
+    request_times = [datetime.datetime.strptime(row['date_request'] + ':' + row['time_request'],
+                                                '%Y-%m-%d:%H:%M')
+                     for i, row in df.iterrows()]
+    travel_times = [datetime.datetime.strptime(row['date_travel'] + ':' + row['time_travel'],
+                                                '%Y-%m-%d:%H:%M')
+                     for i, row in df.iterrows()]
+    difference_times = [min((b-a).total_seconds()/86400,30) for a,b in zip(request_times, travel_times) if b>=a]
+    if draw_plot:
+        plt.hist(difference_times, bins=100)
+        plt.title('Difference in search and travel times (days)')
+        plt.xlabel('Difference in search and travel times (days)')
+        plt.ylabel('Number of searches')
+        plt.savefig('time_diff.png')
+    if return_json:
+        difference_times = difference_times.to_json()
+    return difference_times
