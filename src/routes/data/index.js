@@ -26,6 +26,30 @@ module.exports = router
       });
       res.json(results);
 })
+  .post('/', (req, res, next) => {
+    try
+    {
+      const data = req.files.data;
+
+      //place the file in the upload directory, just for the sake of organization
+      data.mv('./uploads/' + data.name);
+
+      res.send({
+        status: true,
+        message: 'File uploaded',
+        data: {
+          name: data.name,
+          mimetype: data.mimetype,
+          size: data.size
+        }
+      })
+    }
+    catch (err) {
+      console.log(err);
+      next(err);
+    };
+
+  })
   .get('/repetitions', (req, res, next) => {
     // The data sent in the response is provided by a python script, check python_count_repetitions.js for more info
     countRepetitions().then((data) => {

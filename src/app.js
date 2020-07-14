@@ -3,10 +3,17 @@ const bodyParser = require('body-parser');
 const createError = require('http-errors');
 const routes = require('./routes');
 const cors = require('cors');
+// simple express middleware for uploading files. It parses multipart/form-data requests
+// extracts the files if available and makes them available under req.files property
+const fileUpload = require('express-fileupload');
 
 const app = express();
 const port = 3000;
 
+// enable file upload
+app.use(fileUpload({
+  createParentPath: true
+}));
 // bodyparser parses the request body and transforms it into a js object for easy operation
 app.use(bodyParser.json({}));
 app.use(bodyParser.urlencoded({
