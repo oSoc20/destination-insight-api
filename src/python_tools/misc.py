@@ -1,7 +1,8 @@
-import pandas as pd
-from collections import Counter
 import numpy as np
-import matplotlib.pyplot as plt
+from urllib.parse import unquote
+import mysql.connector
+import pandas as pd
+
 from matplotlib.patches import Circle, RegularPolygon
 from matplotlib.path import Path
 from matplotlib.projections.polar import PolarAxes
@@ -24,7 +25,7 @@ def radar_factory(num_vars, frame='circle'):
 
     """
     # calculate evenly-spaced axis angles
-    theta = np.linspace(0, 2*np.pi, num_vars, endpoint=False)
+    theta = np.linspace(0, 2 * np.pi, num_vars, endpoint=False)
 
     class RadarAxes(PolarAxes):
 
@@ -89,44 +90,51 @@ def radar_factory(num_vars, frame='circle'):
     register_projection(RadarAxes)
     return theta
 
-def filter_position(df, side = None, quantity = None):
-    'Filter observations by either top or bottom'
+def filter_position(df, side=None, quantity=None):
+    """Filter observations by either top or bottom"""
     if side == 'top':
         df = df[:quantity]
     elif side == 'bottom':
         df = df[-quantity:]
     return df
 
-def count_repetitions(df, column, side = None, quantity = None, draw_plot = False, return_json = False):
-    'Count the repetitions for each unique value in the specific column'
-    counter = df[column].value_counts().reset_index()
-    counter.columns = [column.title(), 'Counts']
-    counter.hist(column='Counts', bins = 10, log= True)
-    if draw_plot:
-        plt.title(column.title() + ' Stations')
-        plt.xlabel('Number of searches')
-        plt.ylabel('Number of stations')
-        plt.savefig('output/' + column + '.png')
-    counter = filter_position(counter, side = side, quantity = quantity)
-    if return_json:
-        counter = counter.to_json()
-    return counter
+def obtain_city(url):
+    """Decode city field"""
+    url = unquote(url)
+    url_split = url.split('@')
+    for item in url_split:
+        if 'O=' in item:
+            return item[2:]
 
-def count_links(df, side = None, quantity = None, draw_plot = False, return_json = False):
-    'Count the repetitions for each link between stations'
-    destination_pairs = [set([row[1]['origin'], row[1]['destination']]) for row in df.iterrows()]
-    counter = Counter(frozenset(s) for s in destination_pairs)
-    counter = pd.DataFrame.from_dict(counter, orient='index').reset_index()
-    counter.columns = ['Destination pairs', 'Counts']
-    counter['Destination pairs'] = [' to/from '.join(list(item)) for item in counter['Destination pairs']]
-    counter = counter.sort_values(by=['Counts'], ascending=False)
-    counter.hist(column='Counts', bins=10, log=True)
-    if draw_plot:
-        plt.title('Origin - Destination pairs')
-        plt.xlabel('Number of searches')
-        plt.ylabel('Number of station pairs')
-        plt.savefig('output/links.png')
-    counter = filter_position(counter, side=side, quantity=quantity)
-    if return_json:
-        counter = counter.to_json()
-    return counter
+def obtain_time(time):
+    """If necessary decode time field"""
+    if '%' in time:
+        return unquote(time)
+    else:
+        return time
+
+def query_data(vars, start, end, date_type):
+    """Query searches table filtering between the dates 'start' and 'end'.
+    The 'date_type' can be either 'request' or 'travel' depending on what you want to filter by.
+    'vars' is a list of strings with the variable names that you want to extract."""
+
+    # connect to database
+    db = mysql.connector.connect(
+        host="db4free.net",
+        user="nmbstest",
+        password="nmbsRoutePlannerDataAnalysis"
+    )
+    curs = db.cursor()
+    curs.execute("USE routeplannerdata")
+
+    # format variable names
+    vars_format = ', '.join(vars)
+    query = 'select ' + vars_format + ' from searches where date_'+ date_type +' between CAST("' +start +'" as DATE) and CAST("' +end +'" as DATE)'
+
+    # query data
+    curs.execute(query)
+
+    # turn results to dataframe
+    data = pd.DataFrame(curs.fetchall())
+    data.columns = vars
+    return data
