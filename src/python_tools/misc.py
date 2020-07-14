@@ -90,7 +90,6 @@ def radar_factory(num_vars, frame='circle'):
     register_projection(RadarAxes)
     return theta
 
-
 def filter_position(df, side=None, quantity=None):
     """Filter observations by either top or bottom"""
     if side == 'top':
@@ -98,7 +97,6 @@ def filter_position(df, side=None, quantity=None):
     elif side == 'bottom':
         df = df[-quantity:]
     return df
-
 
 def obtain_city(url):
     """Decode city field"""
@@ -108,14 +106,12 @@ def obtain_city(url):
         if 'O=' in item:
             return item[2:]
 
-
 def obtain_time(time):
     """If necessary decode time field"""
     if '%' in time:
         return unquote(time)
     else:
         return time
-
 
 def query_data(vars, start, end, date_type):
     """Query searches table filtering between the dates 'start' and 'end'.

@@ -21,4 +21,3 @@ result = count_repetitions(column=sys.argv[1],
                            return_json=True)
 print(result)
 sys.stdout.flush()
-

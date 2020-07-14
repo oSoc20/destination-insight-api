@@ -7,6 +7,7 @@ const cors = require('cors');
 const app = express();
 const port = 3000;
 
+// bodyparser parses the request body and transforms it into a js object for easy operation
 app.use(bodyParser.json({}));
 app.use(bodyParser.urlencoded({
   extended: true
