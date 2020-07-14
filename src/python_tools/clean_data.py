@@ -2,15 +2,18 @@ import pandas as pd
 import re
 import datetime
 import mysql.connector
-import sys
+from os import listdir, remove
+from os.path import isfile, join, splitext, basename
+import zipfile
+
 from misc import obtain_city
 from misc import obtain_time
 
-# this is script will check if the file has already been uploaded, clean the data, and upload it
-# arg1: name of the file to upload
+def clean_upload_data(directory, file_name, save_clean = False, small_test = False):
+    """Takes the file name of a text file with the original data, cleans it, and uploads it to the database"""
 
-def clean_upload_data(file_name):
-    'Takes the file name of a text file with the original data, cleans it, and uploads it to the database'
+    # print file name
+    print('File to process: ' + file_name)
 
     # connect to database
     db = mysql.connector.connect(
@@ -26,15 +29,35 @@ def clean_upload_data(file_name):
     previous_file_names = [item[0] for item in previous_file_names]
 
     # check if file has already been uploaded
+    ext = splitext(basename(file_name))[1]
+    file_name = splitext(basename(file_name))[0]
     if file_name in previous_file_names:
         print('File has already been uploaded.')
+        print('=' * 80)
         return
     else:
         print('Processing file.')
 
+    # unzip if necessary
+    if ext == '.zip':
+        full_name = join(directory, file_name + ext, )
+        with zipfile.ZipFile(full_name, 'r') as zip_ref:
+            zip_ref.extractall(directory)
+        current_full_path = join(directory, 'tmp', file_name)
+    else:
+        current_full_path = join(directory, file_name)
+
     # load data
-    with open(file_name) as file:
+    with open(current_full_path) as file:
         raw_content = file.readlines()
+
+    # only upload a few linens
+    if small_test:
+        raw_content = raw_content[1:10]
+
+    # remove unzipped file
+    if ext == '.zip':
+        remove(current_full_path)
 
     # grab and clean request times
     request_times = [re.match('^\[.*\]', el).group(0) for el in raw_content]
@@ -60,42 +83,57 @@ def clean_upload_data(file_name):
             data_list.append(current_dict)
     data = pd.DataFrame(data_list)
 
-    # select only the necessary columns
-    data = data[['originId',
-                 'destId',
-                 'searchForArrival',
-                 'date',
-                 'time',
-                 'date_request',
-                 'time_request'
-                 # 'numF',
-                 # 'numB'
-                 ]]
+    if data.empty:
+        print('No valid rows found in file.')
+    else:
+        # select only the necessary columns
+        data = data[['originId',
+                     'destId',
+                     'searchForArrival',
+                     'date',
+                     'time',
+                     'date_request',
+                     'time_request'
+                     # 'numF',
+                     # 'numB'
+                     ]]
 
-    # rename columns
-    data = data.rename({'originId': 'origin',
-                        'destId': 'destination',
-                        'searchForArrival': 'search_for_arrival',
-                        'date': 'date_travel',
-                        'time': 'time_travel'},
-                       axis=1)
+        # rename columns
+        data = data.rename({'originId': 'origin',
+                            'destId': 'destination',
+                            'searchForArrival': 'search_for_arrival',
+                            'date': 'date_travel',
+                            'time': 'time_travel'},
+                           axis=1)
 
-    # save csv
-    data.to_csv(file_name + '_clean.csv', index=False)
+        # save csv
+        if save_clean:
+            data.to_csv(current_full_path + '_clean.csv', index=False)
+        print(data)
 
-    # update file table
-    curs.execute("insert into files (file_name) values (%s)",
-                 (file_name, ))
-
-
-    # update searches table
-    curs.execute("USE routeplannerdata")
-
-    values = data.values.tolist()
-    curs.executemany('insert into searches (origin, destination, search_for_arrival, date_travel, time_travel, date_request, time_request) values (%s, %s, %s, %s, %s, %s, %s)',
-                     values)
-    db.commit()
-    db.close()
+        # update file table
+        curs.execute("insert into files (file_name) values (%s)",
+                     (file_name, ))
 
 
-clean_upload_data(sys.argv[1])
+        # update searches table
+        curs.execute("USE routeplannerdata")
+
+        values = data.values.tolist()
+        curs.executemany('insert into searches (origin, destination, search_for_arrival, date_travel, time_travel, date_request, time_request) values (%s, %s, %s, %s, %s, %s, %s)',
+                         values)
+        db.commit()
+        db.close()
+        print('File uploaded.')
+
+    print('='*80)
+
+def upload_many(directory, small_test = False):
+    """Upload all files (zip) in a directory to the database"""
+
+    # detect all files directory
+    file_names = [item for item in listdir(directory) if isfile(join(directory, item))]
+
+    # for each file extract it, upload it, and remove temporary file
+    for i,item in enumerate(file_names):
+        clean_upload_data(directory, item, small_test = small_test)
