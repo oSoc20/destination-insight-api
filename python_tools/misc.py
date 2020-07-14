@@ -1,5 +1,7 @@
 import numpy as np
 from urllib.parse import unquote
+import mysql.connector
+import pandas as pd
 
 from matplotlib.patches import Circle, RegularPolygon
 from matplotlib.path import Path
@@ -23,7 +25,7 @@ def radar_factory(num_vars, frame='circle'):
 
     """
     # calculate evenly-spaced axis angles
-    theta = np.linspace(0, 2*np.pi, num_vars, endpoint=False)
+    theta = np.linspace(0, 2 * np.pi, num_vars, endpoint=False)
 
     class RadarAxes(PolarAxes):
 
@@ -88,8 +90,9 @@ def radar_factory(num_vars, frame='circle'):
     register_projection(RadarAxes)
     return theta
 
-def filter_position(df, side = None, quantity = None):
-    'Filter observations by either top or bottom'
+
+def filter_position(df, side=None, quantity=None):
+    """Filter observations by either top or bottom"""
     if side == 'top':
         df = df[:quantity]
     elif side == 'bottom':
@@ -98,16 +101,44 @@ def filter_position(df, side = None, quantity = None):
 
 
 def obtain_city(url):
-    'Decode city field'
+    """Decode city field"""
     url = unquote(url)
     url_split = url.split('@')
     for item in url_split:
         if 'O=' in item:
             return item[2:]
 
+
 def obtain_time(time):
-    'If necessary decode time field'
+    """If necessary decode time field"""
     if '%' in time:
         return unquote(time)
     else:
         return time
+
+
+def query_data(vars, start, end, date_type):
+    """Query searches table filtering between the dates 'start' and 'end'.
+    The 'date_type' can be either 'request' or 'travel' depending on what you want to filter by.
+    'vars' is a list of strings with the variable names that you want to extract."""
+
+    # connect to database
+    db = mysql.connector.connect(
+        host="db4free.net",
+        user="nmbstest",
+        password="nmbsRoutePlannerDataAnalysis"
+    )
+    curs = db.cursor()
+    curs.execute("USE routeplannerdata")
+
+    # format variable names
+    vars_format = ', '.join(vars)
+    query = 'select ' + vars_format + ' from searches where date_'+ date_type +' between CAST("' +start +'" as DATE) and CAST("' +end +'" as DATE)'
+
+    # query data
+    curs.execute(query)
+
+    # turn results to dataframe
+    data = pd.DataFrame(curs.fetchall())
+    data.columns = vars
+    return data
