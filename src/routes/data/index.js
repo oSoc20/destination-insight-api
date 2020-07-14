@@ -32,7 +32,7 @@ module.exports = router
       const data = req.files.data;
 
       //place the file in the upload directory, just for the sake of organization
-      data.mv('./uploads/' + data.name);
+      data.mv('./python_tools/uploads/' + data.name);
 
       res.send({
         status: true,
