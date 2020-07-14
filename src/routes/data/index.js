@@ -29,10 +29,10 @@ module.exports = router
   .post('/', (req, res, next) => {
     try
     {
-      const data = req.files.data;
+      const data = req.files.file;
 
       //place the file in the upload directory, just for the sake of organization
-      data.mv('./python_tools/uploads/' + data.name);
+      data.mv('./src/python_tools/uploads/' + data.name);
 
       res.send({
         status: true,
