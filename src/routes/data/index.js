@@ -81,7 +81,7 @@ module.exports = router
       req.arg6 || '10'
     ).then((data) => {
       console.log(data)
-      res.json(data);
+      res.send(data);
     }).catch((err) => {
       console.log(err);
       next(err);
@@ -113,7 +113,7 @@ module.exports = router
       req.arg6 || '10'
     ).then((data) => {
       console.log(data)
-      res.json(data);
+      res.send(data);
     }).catch((err) => {
       console.log(err);
       next(err);
