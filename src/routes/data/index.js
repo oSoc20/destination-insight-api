@@ -5,6 +5,7 @@ const mysql = require('mysql');
 const connection = require('../../helpers/connection');
 const query = require('../../helpers/query');
 const countRepetitions = require('../../helpers/python_count_repetitions');
+const uploadSingle = require('../../helpers/python_upload_single');
 const dotenv = require('dotenv').config();
 
 const dbConfig = require('../../dbConfig');
@@ -32,13 +33,21 @@ module.exports = router
       res.json(results);
 })
   .post('/', (req, res, next) => {
-    try
-    {
-      const data = req.files.file;
+    const data = req.files.file;
 
-      //place the file in the upload directory, just for the sake of organization
-      data.mv('./src/python_tools/uploads/' + data.name);
+    //place the file in the upload directory, just for the sake of organization
+    const uploadPath = 'python_tools/uploads/';
+    data.mv(uploadPath + data.name).then(() => {
 
+      // this script will check if the file has already been uploaded, clean the data, and upload it
+      // arg1: name of the directory that contains the file
+      // arg2: name of the file to upload
+
+      uploadSingle(data.name).catch((err) => {
+        console.log(err);
+        next(err);
+      });
+    }).then(() => {
       res.send({
         status: true,
         message: 'File uploaded',
@@ -47,13 +56,11 @@ module.exports = router
           mimetype: data.mimetype,
           size: data.size
         }
-      })
-    }
-    catch (err) {
+      });
+    }).catch((err) => {
       console.log(err);
       next(err);
-    };
-
+    });
   })
   .get('/cntOrig', (req, res, next) => {
     // sends a response with the top X origins searched

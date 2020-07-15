@@ -12,7 +12,7 @@ const port = 3000;
 
 // enable file upload
 app.use(fileUpload({
-  createParentPath: false
+  preserveExtension: true
 }));
 // bodyparser parses the request body and transforms it into a js object for easy operation
 app.use(bodyParser.json({}));
