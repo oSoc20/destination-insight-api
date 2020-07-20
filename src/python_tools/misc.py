@@ -164,4 +164,6 @@ def query_data(vars, start, end, date_type):
     # turn results to dataframe
     data = pd.DataFrame(curs.fetchall())
     data.columns = vars
+    curs.close()
+    db.close()
     return data

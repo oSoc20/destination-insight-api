@@ -60,8 +60,8 @@ def count_links(start = None,
     destination_pairs = [set([row[1]['origin'], row[1]['destination']]) for row in df.iterrows()]
     counter = Counter(frozenset(s) for s in destination_pairs)
     counter = pd.DataFrame.from_dict(counter, orient='index').reset_index()
-    counter.columns = ['Destination pairs', 'Counts']
-    counter['Destination pairs'] = [' to/from '.join(list(item)) for item in counter['Destination pairs']]
+    counter.columns = ['DestinationPairs', 'Counts']
+    counter['DestinationPairs'] = [' to/from '.join(list(item)) for item in counter['DestinationPairs']]
     counter = counter.sort_values(by=['Counts'], ascending=False)
 
     # draw plot
@@ -106,3 +106,4 @@ def travel_versus_request_times(df, draw_plot = False, return_json = False):
     if return_json:
         difference_times = difference_times.to_json()
     return difference_times
+

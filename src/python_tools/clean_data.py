@@ -34,8 +34,8 @@ def clean_upload_data(directory, file_name, stations, save_clean = False, small_
     if file_name in previous_file_names:
         print('File has already been uploaded.')
         print('=' * 80)
+        curs.close()
         db.close()
-
         return
     else:
         print('Processing file.')
@@ -125,6 +125,7 @@ def clean_upload_data(directory, file_name, stations, save_clean = False, small_
         curs.executemany('insert into searches (origin, destination, search_for_arrival, date_travel, time_travel, date_request, time_request) values (%s, %s, %s, %s, %s, %s, %s)',
                          values)
         db.commit()
+        curs.close()
         db.close()
         print('File uploaded.')
 
