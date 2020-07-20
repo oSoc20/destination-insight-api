@@ -4,8 +4,11 @@ const createError = require('http-errors');
 const mysql = require('mysql');
 const connection = require('../../helpers/connection');
 const query = require('../../helpers/query');
+// python scripts called in nodejs
 const countRepetitions = require('../../helpers/python_count_repetitions');
 const uploadSingle = require('../../helpers/python_upload_single');
+const countLinks = require('../../helpers/python_count_links');
+// python scripts called in nodejs
 const dotenv = require('dotenv').config();
 
 const dbConfig = require('../../dbConfig');
@@ -119,15 +122,41 @@ module.exports = router
       req.arg5 || 'top',
       req.arg6 || '10'
     ).then((data) => {
-      console.log(data)
+      console.log(data);
       res.send(data);
     }).catch((err) => {
       console.log(err);
       next(err);
     });
   })
-  .get('/commonArrivalDestination', (req, res, next) => {
-    // call python script from here
+  .get('/origDestPairs', (req, res, next) => {
+
+    const m = new Date();
+    const dateString = m.getUTCFullYear() + "/" + ("0" + (m.getUTCMonth()+1)).slice(-2) + "/" + ("0" + m.getUTCDate()).slice(-2);
+    console.log(dateString);
+
+    const lastMonthDateString = m.getUTCFullYear() + "/" + ("0" + (m.getUTCMonth())).slice(-2) + "/" + ("0" + m.getUTCDate()).slice(-2);
+    console.log(lastMonthDateString);
+
+    // The data sent in the response is provided by a python script, check python_count_repetitions.js for more info
+    // arg1: start date, inclusive (YYYY-MM-DD)
+    // arg2: end date, inclusive (YYYY-MM-DD)
+    // arg3: date type {'travel', 'request'}
+    // arg4: most or least common stations {'top', 'bottom'}
+    // arg5: integer for number of rows to include
+    countLinks(
+      req.arg1 || lastMonthDateString,
+      req.arg2 || dateString,
+      req.arg3 || 'travel',
+      req.arg4 || 'top',
+      req.arg5 || '10'
+    ).then((data) => {
+      console.log(data);
+      res.send(data);
+    }).catch((err) => {
+      console.log(err);
+      next(err);
+    });
   })
   .get('/mostSearched', (req, res, next) => {
     // call python script from here
