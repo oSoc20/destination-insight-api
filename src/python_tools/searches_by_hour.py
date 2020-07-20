@@ -16,4 +16,3 @@ result = searches_by_hour(start=sys.argv[1],
 
 print(result)
 sys.stdout.flush()
-t

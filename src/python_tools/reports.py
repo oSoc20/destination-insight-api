@@ -147,6 +147,5 @@ def searches_by_hour(start,
 
     # convert results to json
     results = results.to_json()
-    print(results)
 
     return results
