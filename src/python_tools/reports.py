@@ -6,15 +6,16 @@ import matplotlib.pyplot as plt
 from misc import filter_position
 from misc import query_data
 
+
 def count_repetitions(column,
-                      start = None,
-                      end = None,
-                      date_type = None,
-                      df = None,
-                      side = None,
-                      quantity = None,
-                      draw_plot = False,
-                      return_json = False):
+                      start=None,
+                      end=None,
+                      date_type=None,
+                      df=None,
+                      side=None,
+                      quantity=None,
+                      draw_plot=False,
+                      return_json=False):
     """Count the repetitions for each unique value in the specific column"""
 
     # query data if no dataframe is provided
@@ -34,7 +35,7 @@ def count_repetitions(column,
         plt.savefig('output/' + column + '.png')
 
     # give top (or bottom) unique values (by count)
-    counter = filter_position(counter, side = side, quantity = quantity)
+    counter = filter_position(counter, side=side, quantity=quantity)
 
     # return in json format
     if return_json:
@@ -42,14 +43,15 @@ def count_repetitions(column,
 
     return counter
 
-def count_links(start = None,
-                end = None,
-                date_type = None,
-                df = None,
-                side = None,
-                quantity = None,
-                draw_plot = False,
-                return_json = False):
+
+def count_links(start=None,
+                end=None,
+                date_type=None,
+                df=None,
+                side=None,
+                quantity=None,
+                draw_plot=False,
+                return_json=False):
     """Count the repetitions for each link between stations"""
 
     # query data if no dataframe is provided
@@ -80,7 +82,8 @@ def count_links(start = None,
         counter = counter.to_json(orient='records')
     return counter
 
-def travel_versus_request_times(df, draw_plot = False, return_json = False):
+
+def travel_versus_request_times(df, draw_plot=False, return_json=False):
     """Compare the travel and request times"""
 
     # obtain request and travel times
@@ -88,11 +91,11 @@ def travel_versus_request_times(df, draw_plot = False, return_json = False):
                                                 '%Y-%m-%d:%H:%M')
                      for i, row in df.iterrows()]
     travel_times = [datetime.datetime.strptime(row['date_travel'] + ':' + row['time_travel'],
-                                                '%Y-%m-%d:%H:%M')
-                     for i, row in df.iterrows()]
+                                               '%Y-%m-%d:%H:%M')
+                    for i, row in df.iterrows()]
 
     # difference in request and travel times in days (only consider request for future travels
-    difference_times = [min((b-a).total_seconds()/86400,30) for a,b in zip(request_times, travel_times) if b>=a]
+    difference_times = [min((b - a).total_seconds() / 86400, 30) for a, b in zip(request_times, travel_times) if b >= a]
 
     # draw plot
     if draw_plot:
@@ -107,3 +110,21 @@ def travel_versus_request_times(df, draw_plot = False, return_json = False):
         difference_times = difference_times.to_json()
     return difference_times
 
+
+def searches_by_time(start,
+                     end,
+                     date_type,
+                     aggregation):
+    # query data
+    time_var = 'date_' + date_type
+    df = query_data(['origin', 'destination', time_var], start, end, date_type)
+
+    # aggregate data
+    df['time_interval'] = pd.to_datetime(df[time_var]).dt.to_period(aggregation)
+    df = df.groupby(df['time_interval'])
+    results = df['time_interval'].agg('count', ).to_frame()
+
+    # convert results to json
+    results = results.to_json()
+
+    return results

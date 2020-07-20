@@ -11,10 +11,6 @@ import sys
 
 # command example: python count_links.py 2020-05-13 2020-05-14 travel top 10
 
-# read local data (for now)
-data = pd.read_csv('data.csv')
-
-# return requested table
 result = count_links(start=sys.argv[1],
                      end=sys.argv[2],
                      date_type=sys.argv[3],
