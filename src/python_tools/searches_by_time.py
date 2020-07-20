@@ -2,7 +2,7 @@ import pandas as pd
 from reports import searches_by_time
 import sys
 
-# this is script will return a json table with the top or bottom station pairings by number of searches
+# this is script will return a json with the amount of searches by day, month, or year
 # arg1: start date, inclusive (YYYY-MM-DD)
 # arg2: end date, inclusive (YYYY-MM-DD)
 # arg3: date type {'travel', 'request'}

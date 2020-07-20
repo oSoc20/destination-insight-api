@@ -117,7 +117,7 @@ def searches_by_time(start,
                      aggregation):
     # query data
     time_var = 'date_' + date_type
-    df = query_data(['origin', 'destination', time_var], start, end, date_type)
+    df = query_data([time_var], start, end, date_type)
 
     # aggregate data
     df['time_interval'] = pd.to_datetime(df[time_var]).dt.to_period(aggregation)
@@ -126,5 +126,27 @@ def searches_by_time(start,
 
     # convert results to json
     results = results.to_json()
+
+    return results
+
+def searches_by_hour(start,
+                     end,
+                     time_type):
+    # query data
+    date_var = 'date_' + time_type
+    time_var = 'time_' + time_type
+    df = query_data([time_var, date_var], start, end, time_type)
+
+    # extract day of week and hour
+    df['hour'] = df[time_var].dt.components['hours']
+    df['day'] = pd.to_datetime(df[date_var]).dt.dayofweek
+
+    # aggregate data
+    df = df.groupby(['day', 'hour'])
+    results = df[time_var].agg('count', ).to_frame()
+
+    # convert results to json
+    results = results.to_json()
+    print(results)
 
     return results
