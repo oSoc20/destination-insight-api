@@ -9,7 +9,7 @@ import zipfile
 from misc import obtain_city
 from misc import obtain_time
 
-def clean_upload_data(directory, file_name, save_clean = False, small_test = False):
+def clean_upload_data(directory, file_name, stations, save_clean = False, small_test = False):
     """Takes the file name of a text file with the original data, cleans it, and uploads it to the database"""
 
     # print file name
@@ -34,6 +34,8 @@ def clean_upload_data(directory, file_name, save_clean = False, small_test = Fal
     if file_name in previous_file_names:
         print('File has already been uploaded.')
         print('=' * 80)
+        db.close()
+
         return
     else:
         print('Processing file.')
@@ -53,7 +55,7 @@ def clean_upload_data(directory, file_name, save_clean = False, small_test = Fal
 
     # only upload a few linens
     if small_test:
-        raw_content = raw_content[1:10]
+        raw_content = raw_content[1:200]
 
     # remove unzipped file
     if ext == '.zip':
@@ -73,8 +75,8 @@ def clean_upload_data(directory, file_name, save_clean = False, small_test = Fal
         current_dict = {current_var_value[0]: current_var_value[1] for current_var_value in vars_values}
         if 'originId' in current_dict:
             # decode url variables
-            current_dict['originId'] = obtain_city(current_dict['originId'])
-            current_dict['destId'] = obtain_city(current_dict['destId'])
+            current_dict['originId'] = obtain_city(current_dict['originId'], stations)
+            current_dict['destId'] = obtain_city(current_dict['destId'], stations)
             current_dict['time'] = obtain_time(current_dict['time'])
             # add request times
             current_dict['date_request'] = request_times[i].date().strftime('%Y-%m-%d')
@@ -128,12 +130,17 @@ def clean_upload_data(directory, file_name, save_clean = False, small_test = Fal
 
     print('='*80)
 
-def upload_many(directory, small_test = False):
+def upload_many(directory, stations, small_test = False):
     """Upload all files (zip) in a directory to the database"""
 
     # detect all files directory
     file_names = [item for item in listdir(directory) if isfile(join(directory, item))]
 
+    # load files with station names
+    stations = pd.read_csv('stations.csv')
+
     # for each file extract it, upload it, and remove temporary file
     for i,item in enumerate(file_names):
-        clean_upload_data(directory, item, small_test = small_test)
+        clean_upload_data(directory, item, stations, small_test = small_test)
+
+

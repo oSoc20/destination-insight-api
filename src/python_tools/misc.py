@@ -2,6 +2,7 @@ import numpy as np
 from urllib.parse import unquote
 import mysql.connector
 import pandas as pd
+import unidecode
 
 from matplotlib.patches import Circle, RegularPolygon
 from matplotlib.path import Path
@@ -90,6 +91,7 @@ def radar_factory(num_vars, frame='circle'):
     register_projection(RadarAxes)
     return theta
 
+
 def filter_position(df, side=None, quantity=None):
     """Filter observations by either top or bottom"""
     if side == 'top':
@@ -98,13 +100,37 @@ def filter_position(df, side=None, quantity=None):
         df = df[-quantity:]
     return df
 
-def obtain_city(url):
+
+def obtain_city(url, stations):
     """Decode city field"""
+
+    # columns with alternative names
+    name_alts = ['name', 'alternative-fr', 'alternative-nl', 'alternative-de', 'alternative-en', 'alternative-wp']
+
+    # decode url
     url = unquote(url)
     url_split = url.split('@')
     for item in url_split:
         if 'O=' in item:
-            return item[2:]
+            entry = item[2:]
+            # check if it is a bus station
+            bus_station = any([bus_company in entry for bus_company in ['[TEC]', '[De Lijn]', '[STIB]', '[MIVB]']])
+            if bus_station:
+                return 'Bus Station'
+            # check if it is in the netherlands
+            elif '(nl)' in entry.lower():
+                return 'Netherlands'
+            else:
+                entry_search = unidecode.unidecode(entry.lower())
+                for alt in name_alts:
+                    try:
+                        # check if the station name exists (four languages and extra column)
+                        idx = pd.Index(stations[alt]).get_loc(entry_search)
+                        entry = stations['name-original-cap'][idx]# + ' (Station)'
+                        break
+                    except:
+                        pass
+                return entry
 
 def obtain_time(time):
     """If necessary decode time field"""
@@ -112,6 +138,7 @@ def obtain_time(time):
         return unquote(time)
     else:
         return time
+
 
 def query_data(vars, start, end, date_type):
     """Query searches table filtering between the dates 'start' and 'end'.
@@ -129,7 +156,7 @@ def query_data(vars, start, end, date_type):
 
     # format variable names
     vars_format = ', '.join(vars)
-    query = 'select ' + vars_format + ' from searches where date_'+ date_type +' between CAST("' +start +'" as DATE) and CAST("' +end +'" as DATE)'
+    query = 'select ' + vars_format + ' from searches where date_' + date_type + ' between CAST("' + start + '" as DATE) and CAST("' + end + '" as DATE)'
 
     # query data
     curs.execute(query)
