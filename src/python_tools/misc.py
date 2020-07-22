@@ -140,7 +140,7 @@ def obtain_time(time):
         return time
 
 
-def query_data(vars, start, end, date_type):
+def query_data(vars, start, end, date_type, alternative_query = None):
     """Query searches table filtering between the dates 'start' and 'end'.
     The 'date_type' can be either 'request' or 'travel' depending on what you want to filter by.
     'vars' is a list of strings with the variable names that you want to extract."""
@@ -156,7 +156,11 @@ def query_data(vars, start, end, date_type):
 
     # format variable names
     vars_format = ', '.join(vars)
-    query = 'select ' + vars_format + ' from searches where date_' + date_type + ' between CAST("' + start + '" as DATE) and CAST("' + end + '" as DATE)'
+
+    if alternative_query is None:
+        query = 'select ' + vars_format + ' from searches where date_' + date_type + ' between CAST("' + start + '" as DATE) and CAST("' + end + '" as DATE)'
+    else:
+        query = alternative_query
 
     # query data
     curs.execute(query)

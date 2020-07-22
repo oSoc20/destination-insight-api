@@ -2,6 +2,7 @@ import pandas as pd
 import datetime
 from collections import Counter
 import matplotlib.pyplot as plt
+import json
 
 from misc import filter_position
 from misc import query_data
@@ -97,7 +98,7 @@ def travel_versus_request_times_days(start,
     request_times = [datetime.datetime.combine(row['date_request'], datetime.datetime.min.time()) +
                      row['time_request'] for idx, row in df.iterrows()]
     travel_times = [datetime.datetime.combine(row['date_travel'], datetime.datetime.min.time()) +
-                     row['time_travel'] for idx, row in df.iterrows()]
+                    row['time_travel'] for idx, row in df.iterrows()]
 
     # difference in request and travel times in days (only consider request for future travels
     difference_times = [min((b - a).total_seconds() / 86400, 30) for a, b in zip(request_times, travel_times) if b >= a]
@@ -114,6 +115,7 @@ def travel_versus_request_times_days(start,
     if return_json:
         difference_times = difference_times.to_json()
     return difference_times
+
 
 def searches_by_time(start,
                      end,
@@ -153,4 +155,26 @@ def searches_by_hour(start,
     # convert results to json
     results = results.to_json()
 
+    return results
+
+
+def missing_days(start,
+                 end):
+    # query data
+    alternative_query = 'select distinct date_request from searches'
+    df = query_data([''], start, end, 'travel', alternative_query)
+    df = set(df[''])
+
+    # get list of all days between start and and date
+    start = datetime.datetime.strptime(start, "%Y-%m-%d").date()
+    end = datetime.datetime.strptime(end, "%Y-%m-%d").date()
+    all_days = set([(start + datetime.timedelta(days=x)) for x in range((end - start).days + 1)])
+
+    # find missing days
+    results = list(all_days.difference(df))
+    results.sort()
+    results = [item.strftime('%Y-%m-%d') for item in results]
+
+    # convert results to json
+    results = json.dumps(results)
     return results
