@@ -8,7 +8,7 @@ import sys
 # arg2: end date, inclusive (YYYY-MM-DD)
 # arg3: date type {'travel', 'request'}
 
-# command example: python travel_versus_request_times.py 2020-05-13 2020-05-14 travel
+# command example: python travel_versus_request_times_days.py 2020-05-13 2020-05-14 travel
 
 result = travel_versus_request_times_days(start=sys.argv[1],
                                           end=sys.argv[2],

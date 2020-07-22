@@ -101,7 +101,7 @@ def travel_versus_request_times_days(start,
 
     # difference in request and travel times in days (only consider request for future travels
     difference_times = [min((b - a).total_seconds() / 86400, 30) for a, b in zip(request_times, travel_times) if b >= a]
-    print(difference_times)
+
     # draw plot
     if draw_plot:
         plt.hist(difference_times, bins=100)
