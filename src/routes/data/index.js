@@ -8,6 +8,8 @@ const query = require('../../helpers/query');
 const countRepetitions = require('../../helpers/python_count_repetitions');
 const uploadSingle = require('../../helpers/python_upload_single');
 const countLinks = require('../../helpers/python_count_links');
+const searchesByHour = require('../../helpers/python_searches_by_hour');
+const searchesByTimes = require('../../helpers/python_searches_by_time');
 // python scripts called in nodejs
 const dotenv = require('dotenv').config();
 
@@ -17,11 +19,6 @@ module.exports = router
 
   .get('/', async (req, res, next) => {
     // Establish a connection with the mySQL database, check connection.js for more info
-
-    const m = new Date();
-    const lastMonthDateString = m.getUTCFullYear() + "/" + ("0" + (m.getUTCMonth())).slice(-2) + "/" + ("0" + m.getUTCDate()).slice(-2);
-    console.log(lastMonthDateString)
-
     const conn = await connection(dbConfig)
       .catch((err) => {
         console.log(err);
@@ -158,21 +155,53 @@ module.exports = router
       next(err);
     });
   })
-  .get('/mostSearched', (req, res, next) => {
-    // call python script from here
+  .get('/searchesByTime', (req, res, next) => {
+    const m = new Date();
+    const dateString = m.getUTCFullYear() + "/" + ("0" + (m.getUTCMonth()+1)).slice(-2) + "/" + ("0" + m.getUTCDate()).slice(-2);
+    console.log(dateString);
+
+    const lastMonthDateString = m.getUTCFullYear() + "/" + ("0" + (m.getUTCMonth())).slice(-2) + "/" + ("0" + m.getUTCDate()).slice(-2);
+    console.log(lastMonthDateString);
+
+    // The data sent in the response is provided by a python script, check python_searches_by_time.js for more info
+    // arg1: start date, inclusive (YYYY-MM-DD)
+    // arg2: end date, inclusive (YYYY-MM-DD)
+    // arg3: date type {'travel', 'request'}
+    // arg4: aggregate by day, month or year {'D', 'M', 'Y'}
+    searchesByTime(
+      req.arg1 || lastMonthDateString,
+      req.arg2 || dateString,
+      req.arg3 || 'travel',
+      req.arg4 || 'D'
+    ).then((data) => {
+      console.log(data);
+      res.send(data);
+    }).catch((err) => {
+      console.log(err);
+      next(err);
+    });
   })
-  .get('/findBetweenDates', (req, res, next) => {
-    // call python script from here
-  })
-  .get('/requestAndTravelTimes', (req, res, next) => {
-    // call python script from here
-  })
-  .get('/requestByHour', (req, res, next) => {
-    // call python script from here
-  })
-  .get('/requestByDay', (req, res, next) => {
-    // call python script from here
-  })
-  .get('/searchesByLanguage', (req, res, next) => {
-    // call python script from here
+  .get('/searchesByHour', (req, res, next) => {
+    const m = new Date();
+    const dateString = m.getUTCFullYear() + "/" + ("0" + (m.getUTCMonth()+1)).slice(-2) + "/" + ("0" + m.getUTCDate()).slice(-2);
+    console.log(dateString);
+
+    const lastMonthDateString = m.getUTCFullYear() + "/" + ("0" + (m.getUTCMonth())).slice(-2) + "/" + ("0" + m.getUTCDate()).slice(-2);
+    console.log(lastMonthDateString);
+
+    // The data sent in the response is provided by a python script, check python_searches_by_hour.js for more info
+    // arg1: start date, inclusive (YYYY-MM-DD)
+    // arg2: end date, inclusive (YYYY-MM-DD)
+    // arg3: date type {'travel', 'request'}
+    searchesByHour(
+      req.arg1 || lastMonthDateString,
+      req.arg2 || dateString,
+      req.arg3 || 'travel'
+    ).then((data) => {
+      console.log(data);
+      res.send(data);
+    }).catch((err) => {
+      console.log(err);
+      next(err);
+    });
   });
