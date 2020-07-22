@@ -7,7 +7,6 @@ import json
 from misc import filter_position
 from misc import query_data
 
-
 def count_repetitions(column,
                       start=None,
                       end=None,
@@ -63,6 +62,8 @@ def count_links(start=None,
     destination_pairs = [set([row[1]['origin'], row[1]['destination']]) for row in df.iterrows()]
     counter = Counter(frozenset(s) for s in destination_pairs)
     counter = pd.DataFrame.from_dict(counter, orient='index').reset_index()
+
+    # arrange table format
     counter.columns = ['DestinationPairs', 'Counts']
     counter['DestinationPairs'] = [' to/from '.join(list(item)) for item in counter['DestinationPairs']]
     counter = counter.sort_values(by=['Counts'], ascending=False)
@@ -81,6 +82,7 @@ def count_links(start=None,
     # return json
     if return_json:
         counter = counter.to_json(orient='records')
+
     return counter
 
 
@@ -89,7 +91,7 @@ def travel_versus_request_times_days(start,
                                      date_type,
                                      draw_plot=False,
                                      return_json=False):
-    """Compare the travel and request times"""
+    """Compare the travel and request times in days"""
 
     # query data
     df = query_data(['date_request', 'date_travel', 'time_request', 'time_travel'], start, end, date_type)
@@ -114,6 +116,7 @@ def travel_versus_request_times_days(start,
     # return json
     if return_json:
         difference_times = difference_times.to_json()
+
     return difference_times
 
 
@@ -121,6 +124,8 @@ def searches_by_time(start,
                      end,
                      date_type,
                      aggregation):
+    """Count the total number of searches by days, months, or years"""
+
     # query data
     time_var = 'date_' + date_type
     df = query_data([time_var], start, end, date_type)
@@ -129,6 +134,8 @@ def searches_by_time(start,
     df['time_interval'] = pd.to_datetime(df[time_var]).dt.to_period(aggregation)
     df = df.groupby(df['time_interval'])
     results = df['time_interval'].agg('count', ).to_frame()
+
+    # arrange table format
     results = pd.DataFrame({'Date': results.index.to_series().astype(str), 'Counts': results['time_interval']})
 
     # convert results to json
@@ -140,6 +147,8 @@ def searches_by_time(start,
 def searches_by_hour(start,
                      end,
                      time_type):
+    """Count total number of searches by hour of the day and day of the week (for radial plot)"""
+
     # query data
     date_var = 'date_' + time_type
     time_var = 'time_' + time_type
@@ -161,6 +170,8 @@ def searches_by_hour(start,
 
 def missing_days(start,
                  end):
+    """List days for which there is no data in the database"""
+
     # query data
     alternative_query = 'select distinct date_request from searches'
     df = query_data([''], start, end, 'travel', alternative_query)
@@ -178,4 +189,5 @@ def missing_days(start,
 
     # convert results to json
     results = json.dumps(results)
+
     return results

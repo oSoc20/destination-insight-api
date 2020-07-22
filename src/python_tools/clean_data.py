@@ -78,27 +78,28 @@ def clean_upload_data(directory, file_name, stations, save_clean = False, small_
             current_dict['originId'] = obtain_city(current_dict['originId'], stations)
             current_dict['destId'] = obtain_city(current_dict['destId'], stations)
             current_dict['time'] = obtain_time(current_dict['time'])
+
             # add request times
             current_dict['date_request'] = request_times[i].date().strftime('%Y-%m-%d')
             current_dict['time_request'] = request_times[i].time().strftime('%H:%M')
+
             # append values
             data_list.append(current_dict)
+
     data = pd.DataFrame(data_list)
 
+    # check that at least 1 valid row was found in the file
     if data.empty:
         print('No valid rows found in file.')
     else:
-        # select only the necessary columns
+        # only keep the necessary columns
         data = data[['originId',
                      'destId',
                      'searchForArrival',
                      'date',
                      'time',
                      'date_request',
-                     'time_request'
-                     # 'numF',
-                     # 'numB'
-                     ]]
+                     'time_request']]
 
         # rename columns
         data = data.rename({'originId': 'origin',
@@ -108,7 +109,7 @@ def clean_upload_data(directory, file_name, stations, save_clean = False, small_
                             'time': 'time_travel'},
                            axis=1)
 
-        # save csv
+        # save csv and print snippet
         if save_clean:
             data.to_csv(current_full_path + '_clean.csv', index=False)
         print(data)
@@ -117,7 +118,6 @@ def clean_upload_data(directory, file_name, stations, save_clean = False, small_
         curs.execute("insert into files (file_name) values (%s)",
                      (file_name, ))
 
-
         # update searches table
         curs.execute("USE routeplannerdata")
 
@@ -125,8 +125,11 @@ def clean_upload_data(directory, file_name, stations, save_clean = False, small_
         curs.executemany('insert into searches (origin, destination, search_for_arrival, date_travel, time_travel, date_request, time_request) values (%s, %s, %s, %s, %s, %s, %s)',
                          values)
         db.commit()
+
+        # close connection to database
         curs.close()
         db.close()
+
         print('File uploaded.')
 
     print('='*80)
@@ -143,5 +146,3 @@ def upload_many(directory, stations, small_test = False):
     # for each file extract it, upload it, and remove temporary file
     for i,item in enumerate(file_names):
         clean_upload_data(directory, item, stations, small_test = small_test)
-
-

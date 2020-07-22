@@ -7,4 +7,3 @@ from clean_data import upload_many
 
 stations = pd.read_csv('stations.csv')
 upload_many(sys.argv[1], stations, small_test = True)
-
