@@ -83,20 +83,25 @@ def count_links(start=None,
     return counter
 
 
-def travel_versus_request_times(df, draw_plot=False, return_json=False):
+def travel_versus_request_times_days(start,
+                                     end,
+                                     date_type,
+                                     draw_plot=False,
+                                     return_json=False):
     """Compare the travel and request times"""
 
+    # query data
+    df = query_data(['date_request', 'date_travel', 'time_request', 'time_travel'], start, end, date_type)
+
     # obtain request and travel times
-    request_times = [datetime.datetime.strptime(row['date_request'] + ':' + row['time_request'],
-                                                '%Y-%m-%d:%H:%M')
-                     for i, row in df.iterrows()]
-    travel_times = [datetime.datetime.strptime(row['date_travel'] + ':' + row['time_travel'],
-                                               '%Y-%m-%d:%H:%M')
-                    for i, row in df.iterrows()]
+    request_times = [datetime.datetime.combine(row['date_request'], datetime.datetime.min.time()) +
+                     row['time_request'] for idx, row in df.iterrows()]
+    travel_times = [datetime.datetime.combine(row['date_travel'], datetime.datetime.min.time()) +
+                     row['time_travel'] for idx, row in df.iterrows()]
 
     # difference in request and travel times in days (only consider request for future travels
     difference_times = [min((b - a).total_seconds() / 86400, 30) for a, b in zip(request_times, travel_times) if b >= a]
-
+    print(difference_times)
     # draw plot
     if draw_plot:
         plt.hist(difference_times, bins=100)
@@ -109,7 +114,6 @@ def travel_versus_request_times(df, draw_plot=False, return_json=False):
     if return_json:
         difference_times = difference_times.to_json()
     return difference_times
-
 
 def searches_by_time(start,
                      end,
@@ -128,6 +132,7 @@ def searches_by_time(start,
     results = results.to_json()
 
     return results
+
 
 def searches_by_hour(start,
                      end,
