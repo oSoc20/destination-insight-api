@@ -1,5 +1,4 @@
-import pandas as pd
-from reports import searches_by_hour
+from funcs.reports import searches_by_hour
 import sys
 
 # this is script will return a json with the amount of searches by hour and day of the week (total)

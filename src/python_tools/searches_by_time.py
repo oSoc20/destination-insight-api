@@ -1,5 +1,4 @@
-import pandas as pd
-from reports import searches_by_time
+from funcs.reports import searches_by_time
 import sys
 
 # this is script will return a json with the amount of searches by day, month, or year

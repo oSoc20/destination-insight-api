@@ -1,4 +1,4 @@
-from reports import count_repetitions
+from funcs.reports import count_repetitions
 import sys
 
 # this is script will return a json table with the top or bottom stations by number of searches in origin or destination

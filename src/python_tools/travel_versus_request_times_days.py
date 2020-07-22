@@ -1,4 +1,4 @@
-from reports import travel_versus_request_times_days
+from funcs.reports import travel_versus_request_times_days
 import sys
 
 # this is script will return a json with the difference in days between the request and the travel times

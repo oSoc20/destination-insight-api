@@ -1,5 +1,4 @@
-import pandas as pd
-from reports import missing_days
+from funcs.reports import missing_days
 import sys
 
 # this is script will return a json with the days for which there is no data in the database

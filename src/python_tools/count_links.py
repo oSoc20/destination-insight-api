@@ -1,5 +1,5 @@
 import pandas as pd
-from reports import count_links
+from funcs.reports import count_links
 import sys
 
 # this is script will return a json table with the top or bottom station pairings by number of searches

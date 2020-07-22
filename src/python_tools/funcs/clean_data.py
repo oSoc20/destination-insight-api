@@ -6,8 +6,8 @@ from os import listdir, remove
 from os.path import isfile, join, splitext, basename
 import zipfile
 
-from misc import obtain_city
-from misc import obtain_time
+from funcs.misc import obtain_city
+from funcs.misc import obtain_time
 
 def clean_upload_data(directory, file_name, stations, save_clean = False, small_test = False):
     """Takes the file name of a text file with the original data, cleans it, and uploads it to the database"""
@@ -139,9 +139,6 @@ def upload_many(directory, stations, small_test = False):
 
     # detect all files directory
     file_names = [item for item in listdir(directory) if isfile(join(directory, item))]
-
-    # load files with station names
-    stations = pd.read_csv('stations.csv')
 
     # for each file extract it, upload it, and remove temporary file
     for i,item in enumerate(file_names):

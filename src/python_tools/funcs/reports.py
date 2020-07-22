@@ -4,8 +4,8 @@ from collections import Counter
 import matplotlib.pyplot as plt
 import json
 
-from misc import filter_position
-from misc import query_data
+from funcs.misc import filter_position
+from funcs.misc import query_data
 
 def count_repetitions(column,
                       start=None,
