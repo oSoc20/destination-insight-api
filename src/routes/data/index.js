@@ -9,7 +9,7 @@ const countRepetitions = require('../../helpers/python_count_repetitions');
 const uploadSingle = require('../../helpers/python_upload_single');
 const countLinks = require('../../helpers/python_count_links');
 const searchesByHour = require('../../helpers/python_searches_by_hour');
-const searchesByTimes = require('../../helpers/python_searches_by_time');
+const searchesByTime = require('../../helpers/python_searches_by_time');
 // python scripts called in nodejs
 const dotenv = require('dotenv').config();
 
