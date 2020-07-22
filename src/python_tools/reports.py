@@ -129,9 +129,10 @@ def searches_by_time(start,
     df['time_interval'] = pd.to_datetime(df[time_var]).dt.to_period(aggregation)
     df = df.groupby(df['time_interval'])
     results = df['time_interval'].agg('count', ).to_frame()
+    results = pd.DataFrame({'Date': results.index.to_series().astype(str), 'Counts': results['time_interval']})
 
     # convert results to json
-    results = results.to_json()
+    results = results.to_json(orient='records')
 
     return results
 
