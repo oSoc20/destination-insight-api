@@ -163,7 +163,7 @@ def searches_by_hour(start,
     results = df[time_var].agg('count', ).to_frame()
     results = pd.DataFrame({'Day_Hour': results.index.to_series().astype(str),
                             'Counts': results['time_travel']})
-    print(results)
+
     # convert results to json
     results = results.to_json(orient='records')
 
