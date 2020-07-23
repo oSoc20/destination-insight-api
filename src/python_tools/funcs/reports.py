@@ -161,12 +161,13 @@ def searches_by_hour(start,
     # aggregate data
     df = df.groupby(['day', 'hour'])
     results = df[time_var].agg('count', ).to_frame()
-
+    results = pd.DataFrame({'Day-Hour': results.index.to_series().astype(str),
+                            'Counts': results['time_travel']})
+    print(results)
     # convert results to json
-    results = results.to_json()
+    results = results.to_json(orient='records')
 
     return results
-
 
 def missing_days(start,
                  end):
