@@ -7,6 +7,7 @@ const query = require('../../helpers/query');
 const countRepetitions = require('../../helpers/python_count_repetitions');
 const uploadSingle = require('../../helpers/python_upload_single');
 const dotenv = require('dotenv').config();
+const secured = require('../../helpers/secured');
 
 const dbConfig = require('../../dbConfig');
 
@@ -14,11 +15,6 @@ module.exports = router
 
   .get('/', async (req, res, next) => {
     // Establish a connection with the mySQL database, check connection.js for more info
-
-    const m = new Date();
-    const lastMonthDateString = m.getUTCFullYear() + "/" + ("0" + (m.getUTCMonth())).slice(-2) + "/" + ("0" + m.getUTCDate()).slice(-2);
-    console.log(lastMonthDateString)
-
     const conn = await connection(dbConfig)
       .catch((err) => {
         console.log(err);
@@ -62,7 +58,7 @@ module.exports = router
       next(err);
     });
   })
-  .get('/cntOrig', (req, res, next) => {
+  .get('/cntOrig', secured(),(req, res, next) => {
     // sends a response with the top X origins searched
 
     const m = new Date();
