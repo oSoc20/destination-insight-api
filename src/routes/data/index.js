@@ -2,23 +2,26 @@ const express = require('express');
 const router = express.Router();
 const createError = require('http-errors');
 const mysql = require('mysql');
-const connection = require('../../helpers/connection');
-const query = require('../../helpers/query');
+const connection = require('../../lib/connection');
+const query = require('../../lib/query');
 // python scripts called in nodejs
-const countRepetitions = require('../../helpers/python_count_repetitions');
-const uploadSingle = require('../../helpers/python_upload_single');
-const countLinks = require('../../helpers/python_count_links');
-const searchesByHour = require('../../helpers/python_searches_by_hour');
-const searchesByTime = require('../../helpers/python_searches_by_time');
+const countRepetitions = require('../../lib/python_count_repetitions');
+const uploadSingle = require('../../lib/python_upload_single');
+const countLinks = require('../../lib/python_count_links');
+const searchesByHour = require('../../lib/python_searches_by_hour');
+const searchesByTime = require('../../lib/python_searches_by_time');
 // python scripts called in nodejs
 const dotenv = require('dotenv').config();
-const secured = require('../../helpers/secured');
 
-const dbConfig = require('../../dbConfig');
+const config = require('../../config');
+const dbConfig = config.mySqlConfig;
+const auth0Config = config.auth0Config;
 
-module.exports = router
+const checkSecured = require('../../lib/middleware.secured');
 
-  .get('/', async (req, res, next) => {
+router.use(checkSecured(auth0Config));
+
+router.get('/',  async (req, res, next) => {
     // Establish a connection with the mySQL database, check connection.js for more info
     const conn = await connection(dbConfig)
       .catch((err) => {
@@ -32,8 +35,9 @@ module.exports = router
         next(err);
       });
       res.json(results);
-})
-  .post('/', (req, res, next) => {
+});
+
+router.post('/', (req, res, next) => {
     const data = req.files.file;
 
     //place the file in the upload directory, just for the sake of organization
@@ -62,8 +66,9 @@ module.exports = router
       console.log(err);
       next(err);
     });
-  })
-  .get('/cntOrig', secured(),(req, res, next) => {
+});
+
+router.get('/cntOrig', (req, res, next) => {
     // sends a response with the top X origins searched
 
     const m = new Date();
@@ -94,8 +99,9 @@ module.exports = router
       console.log(err);
       next(err);
     });
-  })
-  .get('/cntDest', (req, res, next) => {
+});
+
+router.get('/cntDest', (req, res, next) => {
     // sends a response with the top X destinations searched
 
     const m = new Date();
@@ -126,8 +132,9 @@ module.exports = router
       console.log(err);
       next(err);
     });
-  })
-  .get('/origDestPairs', (req, res, next) => {
+});
+
+router.get('/origDestPairs', (req, res, next) => {
 
     const m = new Date();
     const dateString = m.getUTCFullYear() + "/" + ("0" + (m.getUTCMonth()+1)).slice(-2) + "/" + ("0" + m.getUTCDate()).slice(-2);
@@ -155,8 +162,9 @@ module.exports = router
       console.log(err);
       next(err);
     });
-  })
-  .get('/searchesByTime', (req, res, next) => {
+});
+
+router.get('/searchesByTime', (req, res, next) => {
     const m = new Date();
     const dateString = m.getUTCFullYear() + "/" + ("0" + (m.getUTCMonth()+1)).slice(-2) + "/" + ("0" + m.getUTCDate()).slice(-2);
     console.log(dateString);
@@ -181,8 +189,9 @@ module.exports = router
       console.log(err);
       next(err);
     });
-  })
-  .get('/searchesByHour', (req, res, next) => {
+});
+
+router.get('/searchesByHour', (req, res, next) => {
     const m = new Date();
     const dateString = m.getUTCFullYear() + "/" + ("0" + (m.getUTCMonth()+1)).slice(-2) + "/" + ("0" + m.getUTCDate()).slice(-2);
     console.log(dateString);
@@ -205,4 +214,7 @@ module.exports = router
       console.log(err);
       next(err);
     });
-  });
+});
+
+
+module.exports = router;
