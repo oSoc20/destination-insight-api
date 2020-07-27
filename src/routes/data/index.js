@@ -17,9 +17,13 @@ const config = require('../../config');
 const dbConfig = config.mySqlConfig;
 const auth0Config = config.auth0Config;
 
+//const jwtAuthz = require('express-jwt-authz');
+//const checkScopes = jwtAuthz([ 'read:message' ]);
+
 const checkSecured = require('../../lib/middleware.secured');
 
 router.use(checkSecured(auth0Config));
+//router.use(checkScopes);
 
 router.get('/',  async (req, res, next) => {
     // Establish a connection with the mySQL database, check connection.js for more info
