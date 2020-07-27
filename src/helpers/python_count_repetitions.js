@@ -8,7 +8,7 @@ module.exports = (arg1, arg2, arg3, arg4, arg5, arg6) => new Promise((resolve, r
   // options is, well, aditional options
 
   // call the python script from the script's directory (cwd)
-  const pythonScript = spawn('python',['./count_repetitions.py', arg1, arg2, arg3, arg4, arg5, arg6], {cwd: 'python_tools'})
+  const pythonScript = spawn('python3',['../python_tools/count_repetitions.py', arg1, arg2, arg3, arg4, arg5, arg6], {cwd: 'python_tools'})
     .on('error', (err) => {throw err}); // this is where the python script is located
 
     //  this script will return a json table with the top or bottom stations by number of searches in origin or destination

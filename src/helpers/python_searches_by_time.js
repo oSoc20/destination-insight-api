@@ -7,7 +7,7 @@ module.exports = (arg1, arg2, arg3, arg4) => new Promise((resolve, reject) => {
   // options is, well, aditional options
 
   // call the python script from the script's directory (cwd)
-  const pythonScript = spawn('python',['./searches_by_time.py', arg1, arg2, arg3, arg4], {cwd: 'python_tools'})
+  const pythonScript = spawn('python3',['./searches_by_time.py', arg1, arg2, arg3, arg4], {cwd: 'python_tools'})
     .on('error', (err) => {throw err}); // this is where the python script is located
 
     // this script will return a json with the amount of searches by day, month, or year

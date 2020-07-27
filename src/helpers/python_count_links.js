@@ -8,7 +8,7 @@ module.exports = (arg1, arg2, arg3, arg4, arg5, arg6) => new Promise((resolve, r
   // options is, well, aditional options
 
   // call the python script from the script's directory (cwd)
-  const pythonScript = spawn('python',['./count_links.py', arg1, arg2, arg3, arg4, arg5, arg6], {cwd: 'python_tools'})
+  const pythonScript = spawn('python3',['./count_links.py', arg1, arg2, arg3, arg4, arg5, arg6], {cwd: 'python_tools'})
     .on('error', (err) => {throw err}); // this is where the python script is located
 
     // this script will return a json table with the top or bottom station pairings by number of searches

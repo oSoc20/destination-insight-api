@@ -8,7 +8,7 @@ module.exports = (arg2) => new Promise((resolve, reject) => {
   // options is, well, aditional options
 
   // call the python script from the script's directory (cwd)
-  const pythonScript = spawn('python',['./upload_single.py', 'uploads', arg2], {cwd: 'python_tools'})
+  const pythonScript = spawn('python3',['./upload_single.py', 'uploads', arg2], {cwd: 'python_tools'})
     .on('error', (err) => {
       console.log('Failed to start python_upload_single');
       throw err;
