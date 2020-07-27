@@ -1,11 +1,10 @@
+import mysql.connector
 import pandas as pd
 import re
 import datetime
-import mysql.connector
 from os import listdir, remove
 from os.path import isfile, join, splitext, basename
 import zipfile
-
 from funcs.misc import obtain_city
 from funcs.misc import obtain_time
 
@@ -14,19 +13,31 @@ def clean_upload_data(directory, file_name, stations, save_clean = False, small_
 
     # print file name
     print('File to process: ' + file_name)
+    db = None; 
+    try:
+        print("inside try")
+        # connect to database
+        db = mysql.connector.connect(
+            host="localhost",
+            user="jodi",
+            password="Test123!",
+        )
+        
+        if db.is_connected():
+            print('Connected to MySQL database')
+    
+    except Error as e:
+        print(e)
 
-    # connect to database
-    db = mysql.connector.connect(
-        host="db4free.net",
-        user="nmbstest",
-        password="nmbsRoutePlannerDataAnalysis"
-    )
+    print("after db connection")
 
     curs = db.cursor()
     curs.execute("USE routeplannerdata")
     curs.execute('select file_name from files')
     previous_file_names = curs.fetchall()
     previous_file_names = [item[0] for item in previous_file_names]
+    
+    print("test")
 
     # check if file has already been uploaded
     ext = splitext(basename(file_name))[1]
@@ -49,9 +60,13 @@ def clean_upload_data(directory, file_name, stations, save_clean = False, small_
     else:
         current_full_path = join(directory, file_name)
 
+    print("before opening data")
+
     # load data
     with open(current_full_path) as file:
         raw_content = file.readlines()
+    
+    print("after opening")
 
     # only upload a few linens
     if small_test:
