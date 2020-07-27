@@ -30,6 +30,6 @@ module.exports = (arg2) => new Promise((resolve, reject) => {
   });
 
   pythonScript.on('close', (code) => {
-    resolve(`python_upload_single process exited with code ${code.toString()}`);
+    resolve('closed');
   });
 });

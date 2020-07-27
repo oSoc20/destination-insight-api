@@ -5,6 +5,7 @@ module.exports = async (params) => new Promise(
     // params are: {host, user, password, databate} we have them in a .env file
     // these values are stocked in dbConfig.js
       const connection = mysql.createConnection(params);
+      console.log(connection);
     connection.connect(err => {
       if (err) {
         reject(err);

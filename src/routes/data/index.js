@@ -2,14 +2,14 @@ const express = require('express');
 const router = express.Router();
 const createError = require('http-errors');
 const mysql = require('mysql');
-const connection = require('../../helpers/connection');
-const query = require('../../helpers/query');
+const connection = require('../../utils/connection');
+const query = require('../../utils/query');
 // python scripts called in nodejs
-const countRepetitions = require('../../helpers/python_count_repetitions');
-const uploadSingle = require('../../helpers/python_upload_single');
-const countLinks = require('../../helpers/python_count_links');
-const searchesByHour = require('../../helpers/python_searches_by_hour');
-const searchesByTime = require('../../helpers/python_searches_by_time');
+const countRepetitions = require('../../utils/python_count_repetitions');
+const uploadSingle = require('../../utils/python_upload_single');
+const countLinks = require('../../utils/python_count_links');
+const searchesByHour = require('../../utils/python_searches_by_hour');
+const searchesByTime = require('../../utils/python_searches_by_time');
 // python scripts called in nodejs
 const dotenv = require('dotenv').config();
 
@@ -62,30 +62,24 @@ module.exports = router
       next(err);
     });
   })
-  .get('/cntOrig', (req, res, next) => {
+  .get('/cntOrig/:startDate?:endDate?:dateType?:topOrBottom?:rows?', (req, res, next) => {
     // sends a response with the top X origins searched
-
-    const m = new Date();
-    const dateString = m.getUTCFullYear() + "/" + ("0" + (m.getUTCMonth()+1)).slice(-2) + "/" + ("0" + m.getUTCDate()).slice(-2);
-    console.log(dateString);
-
-    const lastMonthDateString = m.getUTCFullYear() + "/" + ("0" + (m.getUTCMonth())).slice(-2) + "/" + ("0" + m.getUTCDate()).slice(-2);
-    console.log(lastMonthDateString);
+    // query arguments can be passed as
+    // http://localhost:3000/api/data/cntOrig/?startDate=2000/01/01&endDate=2000/01/01
 
     // The data sent in the response is provided by a python script, check python_count_repetitions.js for more info
-    //  arg1: station type {'origin', 'destination'}
-    //  arg2: start date, inclusive (YYYY-MM-DD)
-    //  arg3: end date, inclusive (YYYY-MM-DD)
-    //  arg4: date type {'travel', 'request'}
-    //  arg5: most or least common stations {'top', 'bottom'}
-    //  arg6: integer for number of rows to include
+    //  startDate: start date, inclusive (YYYY-MM-DD)
+    //  endDate: end date, inclusive (YYYY-MM-DD)
+    //  dateType: date type {'travel', 'request'}
+    //  topOrBottom: most or least common stations {'top', 'bottom'}
+    //  rows: integer for number of rows to include
     countRepetitions(
       'origin',
-      req.arg2 || lastMonthDateString,
-      req.arg3 || dateString,
-      req.arg4 || 'travel',
-      req.arg5 || 'top',
-      req.arg6 || '10'
+      req.query.startDate || '2000/01/01',
+      req.query.endDate || '2050/01/01',
+      req.query.dateType || 'travel',
+      req.query.topOrBottom || 'top',
+      req.query.rows || '10'
     ).then((data) => {
       console.log(data)
       res.send(data);
@@ -94,30 +88,24 @@ module.exports = router
       next(err);
     });
   })
-  .get('/cntDest', (req, res, next) => {
+  .get('/cntDest/:startDate?:endDate?:dateType?:topOrBottom?:rows?', (req, res, next) => {
     // sends a response with the top X destinations searched
-
-    const m = new Date();
-    const dateString = m.getUTCFullYear() + "/" + ("0" + (m.getUTCMonth()+1)).slice(-2) + "/" + ("0" + m.getUTCDate()).slice(-2);
-    console.log(dateString);
-
-    const lastMonthDateString = m.getUTCFullYear() + "/" + ("0" + (m.getUTCMonth())).slice(-2) + "/" + ("0" + m.getUTCDate()).slice(-2);
-    console.log(lastMonthDateString);
+    // query arguments can be passed as
+    // http://localhost:3000/api/data/cntDest/?startDate=2000/01/01&endDate=2000/01/01
 
     // The data sent in the response is provided by a python script, check python_count_repetitions.js for more info
-    //  arg1: station type {'origin', 'destination'}
-    //  arg2: start date, inclusive (YYYY-MM-DD)
-    //  arg3: end date, inclusive (YYYY-MM-DD)
-    //  arg4: date type {'travel', 'request'}
-    //  arg5: most or least common stations {'top', 'bottom'}
-    //  arg6: integer for number of rows to include
+    //  startDate: start date, inclusive (YYYY-MM-DD)
+    //  endDate: end date, inclusive (YYYY-MM-DD)
+    //  dateType: date type {'travel', 'request'}
+    //  topOrBottom: most or least common stations {'top', 'bottom'}
+    //  rows: integer for number of rows to include
     countRepetitions(
       'destination',
-      req.arg2 || lastMonthDateString,
-      req.arg3 || dateString,
-      req.arg4 || 'travel',
-      req.arg5 || 'top',
-      req.arg6 || '10'
+      req.query.startDate || '2000/01/01',
+      req.query.endDate || '2050/01/01',
+      req.query.dateType || 'travel',
+      req.query.topOrBottom || 'top',
+      req.query.rows || '10'
     ).then((data) => {
       console.log(data);
       res.send(data);
@@ -126,27 +114,23 @@ module.exports = router
       next(err);
     });
   })
-  .get('/origDestPairs', (req, res, next) => {
-
-    const m = new Date();
-    const dateString = m.getUTCFullYear() + "/" + ("0" + (m.getUTCMonth()+1)).slice(-2) + "/" + ("0" + m.getUTCDate()).slice(-2);
-    console.log(dateString);
-
-    const lastMonthDateString = m.getUTCFullYear() + "/" + ("0" + (m.getUTCMonth())).slice(-2) + "/" + ("0" + m.getUTCDate()).slice(-2);
-    console.log(lastMonthDateString);
+  .get('/origDestPairs/:startDate?:endDate?:dateType?:topOrBottom?:rows?', (req, res, next) => {
+    // sends a response with the top X origin and destination pairs
+    // query arguments can be passed as
+    // http://localhost:3000/api/data/origDestPairs/?startDate=2000/01/01&endDate=2000/01/01
 
     // The data sent in the response is provided by a python script, check python_count_repetitions.js for more info
-    // arg1: start date, inclusive (YYYY-MM-DD)
-    // arg2: end date, inclusive (YYYY-MM-DD)
-    // arg3: date type {'travel', 'request'}
-    // arg4: most or least common stations {'top', 'bottom'}
-    // arg5: integer for number of rows to include
+    // startDate: start date, inclusive (YYYY-MM-DD)
+    // endDate: end date, inclusive (YYYY-MM-DD)
+    // dateType: date type {'travel', 'request'}
+    // topOrBottom: most or least common stations {'top', 'bottom'}
+    // rows: integer for number of rows to include
     countLinks(
-      req.arg1 || lastMonthDateString,
-      req.arg2 || dateString,
-      req.arg3 || 'travel',
-      req.arg4 || 'top',
-      req.arg5 || '10'
+      req.query.startDate || '2000/01/01',
+      req.query.endDate || '2050/01/01',
+      req.query.dateType || 'travel',
+      req.query.topOrBottom || 'top',
+      req.query.rows || '10'
     ).then((data) => {
       console.log(data);
       res.send(data);
@@ -155,24 +139,21 @@ module.exports = router
       next(err);
     });
   })
-  .get('/searchesByTime', (req, res, next) => {
-    const m = new Date();
-    const dateString = m.getUTCFullYear() + "/" + ("0" + (m.getUTCMonth()+1)).slice(-2) + "/" + ("0" + m.getUTCDate()).slice(-2);
-    console.log(dateString);
-
-    const lastMonthDateString = m.getUTCFullYear() + "/" + ("0" + (m.getUTCMonth())).slice(-2) + "/" + ("0" + m.getUTCDate()).slice(-2);
-    console.log(lastMonthDateString);
+  .get('/searchesByTime/:startDate?:endDate?:dateType?:dayMonthOrYear?', (req, res, next) => {
+    // sends a response with the number of searches by time
+    // query arguments can be passed as
+    // http://localhost:3000/api/data/searchesByTime/?startDate=2000/01/01&endDate=2000/01/01
 
     // The data sent in the response is provided by a python script, check python_searches_by_time.js for more info
-    // arg1: start date, inclusive (YYYY-MM-DD)
-    // arg2: end date, inclusive (YYYY-MM-DD)
-    // arg3: date type {'travel', 'request'}
-    // arg4: aggregate by day, month or year {'D', 'M', 'Y'}
+    // startDate: start date, inclusive (YYYY-MM-DD)
+    // endDate: end date, inclusive (YYYY-MM-DD)
+    // dateType: date type {'travel', 'request'}
+    // dayMonthOrYear: aggregate by day, month or year {'D', 'M', 'Y'}
     searchesByTime(
-      req.arg1 || lastMonthDateString,
-      req.arg2 || dateString,
-      req.arg3 || 'travel',
-      req.arg4 || 'D'
+      req.query.startDate || '2000/01/01',
+      req.query.endDate || '2050/01/01',
+      req.query.dateType || 'travel',
+      req.query.dayMonthOrYear || 'D'
     ).then((data) => {
       console.log(data);
       res.send(data);
@@ -181,22 +162,19 @@ module.exports = router
       next(err);
     });
   })
-  .get('/searchesByHour', (req, res, next) => {
-    const m = new Date();
-    const dateString = m.getUTCFullYear() + "/" + ("0" + (m.getUTCMonth()+1)).slice(-2) + "/" + ("0" + m.getUTCDate()).slice(-2);
-    console.log(dateString);
-
-    const lastMonthDateString = m.getUTCFullYear() + "/" + ("0" + (m.getUTCMonth())).slice(-2) + "/" + ("0" + m.getUTCDate()).slice(-2);
-    console.log(lastMonthDateString);
+  .get('/searchesByHour/:startDate?:endDate?:dateType?', (req, res, next) => {
+    // sends a response with the number of searches by hour
+    // query arguments can be passed as
+    // http://localhost:3000/api/data/searchesByHour/?startDate=2000/01/01&endDate=2000/01/01
 
     // The data sent in the response is provided by a python script, check python_searches_by_hour.js for more info
-    // arg1: start date, inclusive (YYYY-MM-DD)
-    // arg2: end date, inclusive (YYYY-MM-DD)
-    // arg3: date type {'travel', 'request'}
+    // startDate: start date, inclusive (YYYY-MM-DD)
+    // endDate: end date, inclusive (YYYY-MM-DD)
+    // dateType: date type {'travel', 'request'}
     searchesByHour(
-      req.arg1 || lastMonthDateString,
-      req.arg2 || dateString,
-      req.arg3 || 'travel'
+      req.query.startDate || '2000/01/01',
+      req.query.endDate || '2050/01/01',
+      req.query.dateType || 'travel'
     ).then((data) => {
       console.log(data);
       res.send(data);
