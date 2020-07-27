@@ -7,4 +7,4 @@ from funcs.clean_data import clean_upload_data
 # arg2: name of the file to upload
 
 stations = pd.read_csv('data/stations.csv')
-clean_upload_data(sys.argv[1], sys.argv[2], stations , small_test = True)
+clean_upload_data(sys.argv[1], sys.argv[2], stations , small_test = False)

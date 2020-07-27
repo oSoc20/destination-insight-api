@@ -6,4 +6,4 @@ from funcs.clean_data import upload_many
 # arg1: name of the directory
 
 stations = pd.read_csv('data/stations.csv')
-upload_many(sys.argv[1], stations, small_test = True)
+upload_many(sys.argv[1], stations, small_test = False)
