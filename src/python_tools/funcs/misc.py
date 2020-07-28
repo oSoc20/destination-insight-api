@@ -66,9 +66,9 @@ def query_data(vars, start, end, date_type, alternative_query = None):
 
     # connect to database
     db = mysql.connector.connect(
-        host="localhost",
-        user="jodi",
-        password="Test123!"
+        host="db4free.net",
+        user="nmbstest",
+        password="nmbsRoutePlannerDataAnalysis"
     )
     curs = db.cursor()
     curs.execute("USE routeplannerdata")
